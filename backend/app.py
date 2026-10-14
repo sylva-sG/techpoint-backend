@@ -11,7 +11,7 @@ if __package__ in (None, ""):
 from backend.config import Config
 from backend.extensions import db
 from backend.models import Category, Product
-from backend.routes import categories_bp, products_bp
+from backend.routes import categories_bp, products_bp, sales_bp
 
 
 def create_app():
@@ -21,6 +21,7 @@ def create_app():
     db.init_app(app)
     app.register_blueprint(categories_bp)
     app.register_blueprint(products_bp)
+    app.register_blueprint(sales_bp)
 
     @app.get("/health")
     def health():

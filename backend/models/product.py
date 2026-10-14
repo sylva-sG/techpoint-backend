@@ -23,6 +23,8 @@ class Product(db.Model):
     )
 
     category = db.relationship("Category", back_populates="products")
+    sale_items = db.relationship("SaleItem", back_populates="product")
+    stock_movements = db.relationship("StockMovement", back_populates="product")
 
     def to_dict(self):
         return {
