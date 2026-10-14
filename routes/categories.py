@@ -23,18 +23,21 @@ def _unsupported_fields(payload):
 
 
 @bp.get("")
+@bp.get("/read")
 def get_categories():
     categories = Category.query.order_by(Category.name.asc()).all()
     return jsonify([category.to_dict() for category in categories])
 
 
 @bp.get("/<int:category_id>")
+@bp.get("/read/<int:category_id>")
 def get_category(category_id):
     category = Category.query.get_or_404(category_id)
     return jsonify(category.to_dict())
 
 
 @bp.post("")
+@bp.post("/create")
 def create_category():
     payload = _json_payload()
     if payload is None:
@@ -58,6 +61,7 @@ def create_category():
 
 
 @bp.put("/<int:category_id>")
+@bp.put("/update/<int:category_id>")
 def update_category(category_id):
     category = Category.query.get_or_404(category_id)
     payload = _json_payload()
@@ -80,3 +84,18 @@ def update_category(category_id):
 
     db.session.commit()
     return jsonify(category.to_dict())
+
+
+@bp.delete("/<int:category_id>")
+@bp.delete("/delete/<int:category_id>")
+def delete_category(category_id):
+    category = Category.query.get_or_404(category_id)
+    if category.products:
+        return jsonify(
+            {"error": "Cannot delete a category that still has products."}
+        ), 409
+
+    category_name = category.name
+    db.session.delete(category)
+    db.session.commit()
+    return jsonify({"message": f"Category '{category_name}' deleted successfully."})

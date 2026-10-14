@@ -70,18 +70,21 @@ def _get_category(category_id):
 
 
 @bp.get("")
+@bp.get("/read")
 def get_products():
     products = Product.query.order_by(Product.title.asc()).all()
     return jsonify([product.to_dict() for product in products])
 
 
 @bp.get("/<int:product_id>")
+@bp.get("/read/<int:product_id>")
 def get_product(product_id):
     product = Product.query.get_or_404(product_id)
     return jsonify(product.to_dict())
 
 
 @bp.post("")
+@bp.post("/create")
 def create_product():
     payload = _json_payload()
     if payload is None:
@@ -132,6 +135,7 @@ def create_product():
 
 
 @bp.put("/<int:product_id>")
+@bp.put("/update/<int:product_id>")
 def update_product(product_id):
     product = Product.query.get_or_404(product_id)
     payload = _json_payload()
@@ -186,3 +190,18 @@ def update_product(product_id):
 
     db.session.commit()
     return jsonify(product.to_dict())
+
+
+@bp.delete("/<int:product_id>")
+@bp.delete("/delete/<int:product_id>")
+def delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    if product.sale_items or product.stock_movements or product.restocks:
+        return jsonify(
+            {"error": "Cannot delete a product with sales or stock history."}
+        ), 409
+
+    product_title = product.title
+    db.session.delete(product)
+    db.session.commit()
+    return jsonify({"message": f"Product '{product_title}' deleted successfully."})
