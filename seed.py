@@ -331,6 +331,8 @@ with app.app_context():
         # Keep the generated Product objects in `products`.
         # Record initial stock for every generated product.
         for product in products:
+            if product.stock_quantity <= 0:
+                continue  # a movement of 0 is not allowed
             db.session.add(
                 StockMovement(
                     product=product,
